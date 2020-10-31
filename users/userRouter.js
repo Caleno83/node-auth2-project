@@ -6,7 +6,7 @@ const { restrict } = require("../middleware/users")
 
 const router = express.Router()
 
-router.get("/users", restrict(), async (req, res, next) => {
+router.get("/users", restrict("HR"), async (req, res, next) => {
 	try {
 		res.json(await db.find())
 	} catch(err) {
@@ -17,7 +17,9 @@ router.get("/users", restrict(), async (req, res, next) => {
 router.post("/register", async (req, res, next) => {
 	try {
 		const { username, password } = req.body
-		const user = await db.findBy({username}).first()
+		// const user = await db.findBy({username}).first()
+		const user = await db.findByUsername(username)
+
 
 		if (user) {
 			return res.status(409).json({
@@ -39,7 +41,8 @@ router.post("/register", async (req, res, next) => {
 router.post("/login", async (req, res, next) => {
 	try {
 		const { username, password } = req.body
-		const user = await db.findBy({ username }).first()
+		// const user = await db.findBy({ username }).first()
+		const user = await db.findByUsername(username)
 		
 		if (!user) {
 			return res.status(401).json({
@@ -57,6 +60,7 @@ router.post("/login", async (req, res, next) => {
 
 		const token = jwt.sign({
 			userID: user.id,
+			userDepartment: user.department,
 		}, process.env.JWT_SECRET)
 
 
